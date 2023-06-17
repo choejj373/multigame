@@ -29,7 +29,7 @@ io2.on('connection', (socket)=>{
 
     socket.on('roomCreated', (data)=>{
         console.log("roomCreated");
-        socketSingle.emit("matched");
+        socketSingle.emit("matched", data);
     });
 
 });
@@ -60,7 +60,7 @@ io.on('connection', (socket)=>{
 
     socket.on('match', (data)=>{
         console.log('matching : ' + data);
-        socketMulti.emit("createRoom");
+        socketMulti.emit("createRoom", data);
         // socket.emit('matched');
     });
 

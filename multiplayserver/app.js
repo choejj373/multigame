@@ -14,7 +14,7 @@ socket.on("news",(data)=>{
 
 socket.on("createRoom",(data)=>{
      console.log("createRoom : " + data);
-     socket.emit("roomCreated");
+     socket.emit("roomCreated", data);
 });
 
 // 클라이언트 요청 처리 서버
