@@ -1,15 +1,51 @@
 "use strict"
 
 const express = require("express");
-const app = express();
-const server = app.listen(3001,()=>{
-    console.log("server listening:3001");
+
+let socketSingle, socketMulti;
+
+// for multiplayserver
+const app2 = express();
+const server2 = app2.listen(2002,()=>{
+    console.log("server for multigameserver - listening:2002");
 });
 
 const socketIO = require("socket.io");
+const io2 = socketIO( server2 );
+
+io2.on('connection', (socket)=>{
+    socketMulti = socket;
+    socket.on('disconnect',()=>{
+        console.log('client is disconnected');
+    });
+
+    socket.on('error', (error)=>{
+        console.log(error);
+    });
+
+    socket.on('reply', (data)=>{
+        console.log(data);
+    });
+
+    socket.on('roomCreated', (data)=>{
+        console.log("roomCreated");
+        socketSingle.emit("matched");
+    });
+
+});
+// for singleplayserver
+const app = express();
+const server = app.listen(2001,()=>{
+    console.log("server for singlegameserver - listening:2001");
+});
+
+// const socketIO = require("socket.io");
 const io = socketIO( server );
 
 io.on('connection', (socket)=>{
+    
+    socketSingle = socket;
+
     socket.on('disconnect',()=>{
         console.log('client is disconnected');
     });
@@ -23,11 +59,12 @@ io.on('connection', (socket)=>{
     });
 
     socket.on('match', (data)=>{
-        console.log('matching' + data);
-        socket.emit('matched');
+        console.log('matching : ' + data);
+        socketMulti.emit("createRoom");
+        // socket.emit('matched');
     });
 
-    socket.emit('news', 'Hellow Socket.IO');
+    // socket.emit('news', 'Hellow Socket.IO');
 });
 
 
