@@ -60,8 +60,15 @@ io.on('connection', (socket)=>{
 
     socket.on('match', (data)=>{
         console.log('matching : ' + data);
-        socketMulti.emit("createRoom", data);
-        // socket.emit('matched');
+
+        try{
+            socketMulti.emit("createRoom", data);
+        }
+        catch( err )
+        {
+            console.log( err );
+            socket.emit('match-failed', data);
+        }
     });
 
     // socket.emit('news', 'Hellow Socket.IO');

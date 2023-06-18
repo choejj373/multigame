@@ -45,6 +45,11 @@ socketConnector.on("matched",(data)=>{
   
 });
 
+socketConnector.on("match-failed",(data)=>{
+    console.log("match failed : " + data);
+    // 클라이언트에게 멀티플레이 서버로 접속
+    ioForClient.to(data).emit("match-failed");
+})
 /////////////////////////////////////////////////////////////////////////////
 //
 ioForClient.on('connection', (socket)=>{
@@ -52,7 +57,12 @@ ioForClient.on('connection', (socket)=>{
 
     socket.on('match', (data)=>{
         console.log( socket.id, " matching");
-        socketConnector.emit("match", socket.id);
+        if( socketConnector.connected ){
+            socketConnector.emit("match", socket.id);
+        }
+        else{
+            socket.emit('match-failed');
+        }
     });
 
     socket.on('disconnect', ()=>{
