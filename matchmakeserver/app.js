@@ -1,8 +1,12 @@
 "use strict"
 
 const express = require("express");
+const matchingManager = require("./src/matchingManager");
+const Client = require("./src/client");
 
-let socketSingle, socketMulti;
+// let socketSingle, socketMulti;
+// const matchingManager = MatchingManager;
+const messageQueue = require("./src/messageQueue");
 
 // for multiplayserver
 const app2 = express();
@@ -11,10 +15,10 @@ const server2 = app2.listen(2002,()=>{
 });
 
 const socketIO = require("socket.io");
-const io2 = socketIO( server2 );
+const ioMulti = socketIO( server2 );
 
-io2.on('connection', (socket)=>{
-    socketMulti = socket;
+ioMulti.on('connection', (socket)=>{
+    // socketMulti = socket;
     socket.on('disconnect',()=>{
         console.log('client is disconnected');
     });
@@ -29,7 +33,7 @@ io2.on('connection', (socket)=>{
 
     socket.on('roomCreated', (data)=>{
         console.log("roomCreated");
-        socketSingle.emit("matched", data);
+        messageQueue.pushBack( {type:2, roomID:data});
     });
 
 });
@@ -40,11 +44,11 @@ const server = app.listen(2001,()=>{
 });
 
 // const socketIO = require("socket.io");
-const io = socketIO( server );
+const ioSingle = socketIO( server );
 
-io.on('connection', (socket)=>{
+ioSingle.on('connection', (socket)=>{
     
-    socketSingle = socket;
+    // socketSingle = socket;
 
     socket.on('disconnect',()=>{
         console.log('client is disconnected');
@@ -60,69 +64,79 @@ io.on('connection', (socket)=>{
 
     socket.on('match', (data)=>{
         console.log('matching : ' + data);
-
-        try{
-            socketMulti.emit("createRoom", data);
-        }
-        catch( err )
-        {
-            console.log( err );
-            socket.emit('match-failed', data);
-        }
+        const client1 = new Client(data,0);
+        matchingManager.addWaitMatchingClient( client1 );
+        // try{
+        //     socketMulti.emit("createRoom", data);
+        // }
+        // catch( err )
+        // {
+        //     console.log( err );
+        //     socket.emit('match-failed', data);
+        // }
     });
-
-    // socket.emit('news', 'Hellow Socket.IO');
 });
 
 
 
-// const net = require("net");
-// let sockets = [];
 
-// const server = net.createServer( (client)=>{
-//     client.setEncoding("utf8");
-//     client.setTimeout(1000*60);
-//     client.on("data",(data)=>{
-//         console.log("data received :" + data);
-//         for(let i = 0; i < sockets.length;i++){
-//             sockets[i].write(data);
-//         }
-//     });
+function updateFrame(){
+    console.log("updateFrame");
+    const msg = messageQueue.popFront();
+    if( msg )
+    {
+        console.log( "process msg - ",msg );
+        switch( msg.type )
+        {
+        case 1:// multi play server에 방 생성 요청
+            try{
+                ioMulti.emit( "createRoom", msg.roomID );
+            }catch( err ){
+                console.log( err );
+                messageQueue.pushBack( msg );
+            }
+            break;
+        case 2:// 방생성 완료
+            const result = matchingManager.getWaitRoomCreate( msg.roomID );
+            console.log( result );
 
-//     client.on("error", ()=>{
-//         console.log("error");
-//     });
+            if( result ){
+                // 싱글 서버에 방 생성 알려 클라이언트 이동하게함 - 그전에 매칭 요청시 받은 socketID 저장해두어야 한다.
+                try{
+                    ioSingle.emit( "matched", result.a.socketClient );
+                    console.log( result.a );
+                    ioSingle.emit( "matched", result.b.socketClient );
+                    console.log( result.b.socketClient );
 
-//     client.on("close", ()=>{
-//         sockets.pop();
-//         console.log("client closed");
-//     });
-//     client.on("timeout",()=>{
-//         console.log("timeout");
-//     });
-//     client.write("hello");
-//     sockets.push(client);
-// });
+                }catch(err){
+                    console.error( err );
+                }
+                
+                matchingManager.deleteWaitRoomCreate( msg.roomID );
+            }else{
+                console.error("not found roomID - ", msg.roomID );
+            }
 
-// server.on("error", (error)=>{
-//     console.log("server error");
-// });
+            break;
+        default:
+            break;
 
-// server.on("listening",()=>{
-//     console.log("server listening");
-// })
+        }
+    }else{
+        console.log("message queue is empty");
+    }
+   
+};
 
-// server.listen(3001, ()=>{
-//     let serverInfo = server.address();
-//     let serverInfoJson = JSON.stringify(serverInfo);
-//     console.log("listen server : " + serverInfoJson );
-//     server.on("error",()=>{
-//         console.log("server error");
-//     })
-//     server.on("close", ()=>{
-//         console.log("server closed");
-//     });
-//     server.on("connection", ()=>{
-//         console.log("client connected");
-//     });
-// });
+
+// const client1 = new Client(0,0);
+// matchingManager.addWaitMatchingClient( client1 );
+
+// const client2 = new Client(1,0);
+// matchingManager.addWaitMatchingClient( client2 );
+
+setInterval( updateFrame, 1000 );
+
+matchingManager.startMatching();
+
+module.exports = messageQueue;
