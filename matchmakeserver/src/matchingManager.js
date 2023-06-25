@@ -38,7 +38,7 @@ class MatchingManager{
                 MatchingManager.waitMachingClientList.shift(), 
                 MatchingManager.waitMachingClientList.shift() );
 
-            MatchingManager.roomID++
+            MatchingManager.roomID++;
 
             MatchingManager.waitRoomCreateList.set( MatchingManager.roomID, waitRoomCreate );
 

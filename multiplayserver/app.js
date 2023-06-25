@@ -18,6 +18,10 @@ app.use(bodyParser.urlencoded( { extended:true } ));
 app.use('/', homeR);
 
 
+
+const roomManager = require('./src/RoomManager');
+const messageQueue = require('./src/MessageQueue');
+
 /////////////////////////////////////////////////////////////////////////////
 // 매치 메이킹 서버 접속용
 const ioConnector = require("socket.io-client");
@@ -30,7 +34,12 @@ socketConnector.on("news",(data)=>{
 
 socketConnector.on("createRoom",(data)=>{
      console.log("createRoom : " + data);
-     socketConnector.emit("roomCreated", data);
+
+     if( roomManager.createRoom( roomId, clients ) ){
+        socketConnector.emit("roomCreated", data);
+     }else{
+        //방 생성 실패 알림
+     }
 });
 
 /////////////////////////////////////////////////////////////////////////////
@@ -46,17 +55,76 @@ const ioForClient = socketIO( serverForClient,
 ioForClient.on('connection', (socket)=>{
     console.log( socket.id, " Connected");
 
-    // socket.on('match', (data)=>{
-    //     console.log( socket.id, " matching");
-    //     socketConnector.emit("match", socket.id);
-    // });
+    // 방 접속 요청 처리
+    socket.on( 'joinRoom', (data)=>{
+        console.log( data );
+        const msg = JSON.parse( data );
+        if( roomManager.joinRoom( parseInt(msg.roomId), msg.userId, socket.id ) ){
+            // socket room에 조인
+            socket.join( parseInt(msg.roomId) );
+
+            //?? size가 좀 이상한데
+            console.log( "socket rooms size : ", socket.rooms.size );
+        }
+        
+        // 성공/실패 처리 추가
+    });
 
     socket.on('disconnect', ()=>{
         console.log( socket.id, " Disconnected");
+        console.log( "socket rooms size : ", socket.rooms.size );
     });
 
     socket.on('error',(err) =>{
         console.log( socket.id, err);
     });
 });
+/**--------------------------------------------------------------------*/
+// For Test
+// const clients1 = [
+//     {
+//         userId : 'choejj1'
+//     },
+//  ]
+// const roomId1 = 1;
+// roomManager.createRoom( roomId1, clients1 );
 
+// const clients2 = [
+//     {
+//         userId : 'choejj2'
+//     },
+//  ]
+// const roomId2 = 2;
+// roomManager.createRoom( roomId2, clients2 );
+
+/**--------------------------------------------------------------------*/
+// 클래스간 의존성을 낮추기 위하여 별도의 메세지 큐를 두었다.
+function processMessage(){
+    const msg = messageQueue.popFront();
+    if( msg ){
+        console.log( "Process Message : ", msg.type );
+        switch( msg.type )
+        {
+        case 1:
+            ioForClient.to( msg.roomId ).emit( 'ready' );
+            // ioForClient.emit( 'ready' );
+            break;
+        case 2:
+           ioForClient.to( msg.roomId ).emit( 'gamestart' );
+            // ioForClient.emit( 'gamestart' );
+              
+            break;
+        case 3:
+            ioForClient.to( msg.roomId ).emit( 'gameend' );
+            // ioForClient.emit( 'gameend' );
+            break;
+        }
+    }
+}
+
+function updateFrame(){
+    processMessage();
+    roomManager.updateFrame();
+}
+
+setInterval( updateFrame, 1000 );

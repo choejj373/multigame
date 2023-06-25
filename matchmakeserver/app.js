@@ -135,8 +135,9 @@ function updateFrame(){
 // const client2 = new Client(1,0);
 // matchingManager.addWaitMatchingClient( client2 );
 
-setInterval( updateFrame, 1000 );
 
+setInterval( updateFrame, 1000 );
+// setInterval( MatchingManager.tryMatching, 1000 * 7 );
 matchingManager.startMatching();
 
 module.exports = messageQueue;

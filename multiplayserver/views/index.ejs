@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <!-- <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script> -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/connect.js" defer> </script>
     <title>Document</title>
@@ -11,6 +13,8 @@
 <body>
 <h1> Multi Play Server</h1>
 
-<button id="send">Send</button>
+<input id = "userId" type="text" placeholder="유저아이디"/><br>
+<input id = "roomId" type="text" placeholder="방번호"/><br>
+<button id="join">Join</button>
 
 </body>
