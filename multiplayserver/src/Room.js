@@ -8,8 +8,6 @@ class Room{
         this.waitJoinClients = new Map();
         this.joinedClients = new Map();
 
-        // waitClientJoin, ready, playing;
-        // this.state = 'waitClientJoin';
         this.roomId = roomId;
 
         console.log( clients );
@@ -19,6 +17,12 @@ class Room{
             const newCli = new Client( element.userId );
             this.waitJoinClients.set( newCli.userId, newCli );
         });
+
+        // 게임중에 나올 보스들 정보
+        this.tableBoss = new Map();
+        this.tableBoss.set( 1000 * 5, 1 );
+        this.tableBoss.set( 1000 * 10, 1 );
+        this.tableBoss.set( 1000 * 15, 2 );
     }
 
     join( userId, socketId ){
@@ -62,6 +66,31 @@ class Room{
         messageQueue.pushBack( { type:3, roomId : this.roomId });
     }
 
+    updateGame( elapsedTime ){
+        if( this.tableBoss.size <=0 ){ return ;}
+
+        let keys = [];
+
+        this.tableBoss.forEach( (value, key)=>{
+                if( key <= elapsedTime )
+                {
+                    keys.push( key );
+                    messageQueue.pushBack( 
+                        { 
+                            type : 4, 
+                            roomId : this.roomId, 
+                            bossType : value,
+                        }
+                    );
+                }
+            }
+        )
+
+        for( let key of keys ){
+            this.tableBoss.delete( key );
+        }
+    }
+
     isGameEnd(){
         if( this.state == 'end'){ return true; }
         return false;
@@ -84,8 +113,11 @@ class Room{
                 break;
                 //playing 상태가 10 초 지나면 게임 끝
             case 'playing':
-                if( Date.now() - this.timeStart >= 1000 * 5 ){
+                const elapsedTime = Date.now() - this.timeStart;
+                if(  elapsedTime >= 1000 * 20 ){
                     this.endGame();
+                }else{
+                    this.updateGame( elapsedTime );
                 }
                 // 게임 플레이 진행
                 break;

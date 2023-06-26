@@ -56,13 +56,13 @@ const onConnection = require('./src/onConnection');
 ioForClient.on('connection', onConnection );
 /**--------------------------------------------------------------------*/
 // For Test
-// const clients1 = [
-//     {
-//         userId : 'choejj1'
-//     },
-//  ]
-// const roomId1 = 1;
-// roomManager.createRoom( roomId1, clients1 );
+ const clients1 = [
+     {
+         userId : 'choejj1'
+     },
+  ]
+const roomId1 = 1;
+roomManager.createRoom( roomId1, clients1 );
 
 // const clients2 = [
 //     {
@@ -88,6 +88,9 @@ function processMessage(){
             break;
         case 3:
             ioForClient.to( msg.roomId ).emit( 'gameend' );
+            break;
+        case 4:
+            ioForClient.to( msg.roomId ).emit( 'bossappear' , msg.bossType );
             break;
         }
     }

@@ -27,6 +27,10 @@ socket.on('gameend', (date)=>{
     console.log("gameend")
 });
 
+socket.on('bossappear', (data)=>{
+    console.log("boss appeared")
+});
+
 function joinRoom(){
 
     const userId = document.getElementById("userId").value;
