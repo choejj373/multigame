@@ -11,6 +11,9 @@ class MessageQueue{
             return this.#messageQueue.shift();
         }
     }
+    size(){
+        return this.#messageQueue.length;
+    }
 }
 
 module.exports = new MessageQueue();

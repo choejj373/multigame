@@ -49,8 +49,8 @@ class RoomManager{
     // waitClientJoinRooms 중 일정 시간동안 모든 클라이언트가 꽉차지 않는다면
     // 삭제하거나 시작한다.
     updateFrame(){
-        console.log( "waitClientJoinRooms : ", this.waitClientJoinRooms.size);
-        console.log( "playingRooms : ", this.playingRooms.size);
+        // console.log( "waitClientJoinRooms : ", this.waitClientJoinRooms.size);
+        // console.log( "playingRooms : ", this.playingRooms.size);
 
         let gameEndRooms = [];
         this.playingRooms.forEach(( value, key )=>{

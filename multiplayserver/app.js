@@ -50,36 +50,10 @@ const serverForClient = app.listen( 3002 ,()=>{
 });
 
 const socketIO = require('socket.io');
-const ioForClient = socketIO( serverForClient,
-    { path: "/socket.io"} );
+const ioForClient = socketIO( serverForClient, { path: "/socket.io"} );
 
-ioForClient.on('connection', (socket)=>{
-    console.log( socket.id, " Connected");
-
-    // 방 접속 요청 처리
-    socket.on( 'joinRoom', (data)=>{
-        console.log( data );
-        const msg = JSON.parse( data );
-        if( roomManager.joinRoom( parseInt(msg.roomId), msg.userId, socket.id ) ){
-            // socket room에 조인
-            socket.join( parseInt(msg.roomId) );
-
-            //?? size가 좀 이상한데
-            console.log( "socket rooms size : ", socket.rooms.size );
-        }
-        
-        // 성공/실패 처리 추가
-    });
-
-    socket.on('disconnect', ()=>{
-        console.log( socket.id, " Disconnected");
-        console.log( "socket rooms size : ", socket.rooms.size );
-    });
-
-    socket.on('error',(err) =>{
-        console.log( socket.id, err);
-    });
-});
+const onConnection = require('./src/onConnection');
+ioForClient.on('connection', onConnection );
 /**--------------------------------------------------------------------*/
 // For Test
 // const clients1 = [
@@ -99,7 +73,7 @@ ioForClient.on('connection', (socket)=>{
 // roomManager.createRoom( roomId2, clients2 );
 
 /**--------------------------------------------------------------------*/
-// 클래스간 의존성을 낮추기 위하여 별도의 메세지 큐를 두었다.
+// 클래스간 의존성을 낮추기 위하여 별도의 메세지 큐를 두었다.(?)
 function processMessage(){
     const msg = messageQueue.popFront();
     if( msg ){
@@ -108,16 +82,12 @@ function processMessage(){
         {
         case 1:
             ioForClient.to( msg.roomId ).emit( 'ready' );
-            // ioForClient.emit( 'ready' );
             break;
         case 2:
-           ioForClient.to( msg.roomId ).emit( 'gamestart' );
-            // ioForClient.emit( 'gamestart' );
-              
+            ioForClient.to( msg.roomId ).emit( 'gamestart' );
             break;
         case 3:
             ioForClient.to( msg.roomId ).emit( 'gameend' );
-            // ioForClient.emit( 'gameend' );
             break;
         }
     }
