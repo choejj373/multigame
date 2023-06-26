@@ -4,8 +4,6 @@ const express = require("express");
 const matchingManager = require("./src/matchingManager");
 const Client = require("./src/client");
 
-// let socketSingle, socketMulti;
-// const matchingManager = MatchingManager;
 const messageQueue = require("./src/messageQueue");
 
 // for multiplayserver
@@ -45,12 +43,10 @@ const server = app.listen(2001,()=>{
     console.log("server for singlegameserver - listening:2001");
 });
 
-// const socketIO = require("socket.io");
 const ioSingle = socketIO( server );
 
 ioSingle.on('connection', (socket)=>{
-    
-    // socketSingle = socket;
+   
     console.log("single play server is conneted")
 
     socket.on('disconnect',()=>{
@@ -136,10 +132,55 @@ function updateFrame(){
     }  
 };
 
+class WaitRoomCreate{
+    constructor( a, b ){
+        this.a = a;
+        this.b = b;
+    }
+};
 
+function tryMatching(){
+    const waitClientCount = matchingManager.waitMachingClientList.length;
+    const waitRoomCreateCount = matchingManager.waitRoomCreateList.size;
+
+    console.log("try matching");
+    console.log("wait matching client : ", waitClientCount );
+    console.log("wait room created", waitRoomCreateCount );
+    
+    if( waitClientCount === 0 ){
+        console.log("Waiting clients is none");
+        return;
+    }
+
+    if( waitClientCount >= 2){
+        
+        console.log("Matching completed");
+        
+        const client1 = matchingManager.waitMachingClientList.shift();
+        const client2 = matchingManager.waitMachingClientList.shift()
+
+        const waitRoomCreate = new WaitRoomCreate( client1, client2 )
+
+        matchingManager.roomId++;
+
+        matchingManager.waitRoomCreateList.set( matchingManager.roomId, waitRoomCreate );
+
+        //멀티 플레이 서버에 방 생성 요청
+        let data = { 
+            type:1, 
+            roomId:matchingManager.roomId,
+            clients :[
+                {
+                    userId:client1.userId,
+                },
+                {
+                    userId:client2.userId,
+                }
+            ]
+        }
+        messageQueue.pushBack( data );
+    }    
+}
 
 setInterval( updateFrame, 1000 );
-
-matchingManager.startMatching();
-
-module.exports = messageQueue;
+setInterval( tryMatching, 1000 * 5);
