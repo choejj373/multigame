@@ -33,13 +33,14 @@ socketConnector.on("news",(data)=>{
 });
 
 socketConnector.on("createRoom",(data)=>{
-     console.log("createRoom : " + data);
-
-     if( roomManager.createRoom( roomId, clients ) ){
-        socketConnector.emit("roomCreated", data);
-     }else{
+    console.log("createRoom : " + data);
+    
+    const msg = JSON.parse(data);
+    if( roomManager.createRoom( msg.roomId, msg.clients ) ){
+        socketConnector.emit("roomCreated", msg.roomId );
+    }else{
         //방 생성 실패 알림
-     }
+    }
 });
 
 /////////////////////////////////////////////////////////////////////////////

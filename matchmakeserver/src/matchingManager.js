@@ -1,6 +1,7 @@
 "use strict"
 const socketIO = require("socket.io");
 const messageQueue = require("./messageQueue");
+const Client = require("./client");
 
 class WaitRoomCreate{
     constructor( a, b ){
@@ -13,7 +14,7 @@ class MatchingManager{
     static waitMachingClientList = [];
     static waitRoomCreateList = new Map();
 
-    static roomID = 0;
+    static roomId = 0;
 
     
     static tryMatching(){
@@ -34,23 +35,32 @@ class MatchingManager{
             
             console.log("Matching completed");
             
-            const waitRoomCreate = new WaitRoomCreate( 
-                MatchingManager.waitMachingClientList.shift(), 
-                MatchingManager.waitMachingClientList.shift() );
+            const client1 = MatchingManager.waitMachingClientList.shift();
+            const client2 = MatchingManager.waitMachingClientList.shift()
+            const waitRoomCreate = new WaitRoomCreate( client1, client2 )
 
-            MatchingManager.roomID++;
+            MatchingManager.roomId++;
 
-            MatchingManager.waitRoomCreateList.set( MatchingManager.roomID, waitRoomCreate );
+            MatchingManager.waitRoomCreateList.set( MatchingManager.roomId, waitRoomCreate );
 
             //멀티 플레이 서버에 방 생성 요청
-            messageQueue.pushBack( { type:1, roomID:MatchingManager.roomID });
+            let data = { 
+                type:1, 
+                roomId:MatchingManager.roomId,
+                clients :[
+                    {
+                        userId:client1.userId,
+                    },
+                    {
+                        userId:client2.userId,
+                    }
+                ]
+            }
+            messageQueue.pushBack( data );
         }
     }
 
     constructor(){
-        // this.waitMachingClientList = Array();
-        // this.waitRoomCreateList = new Map();
-    
         if( !MatchingManager.instance){
             MatchingManager.instance = this;
         }

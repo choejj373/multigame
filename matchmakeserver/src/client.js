@@ -4,14 +4,11 @@ class Client{
     // #socketClient;
     // #socketSingleServer;
 
-    constructor(socketClient, socketSingleServer)
+    constructor( userId, socketClient )
     {
+        this.userId = userId;
         this.socketClient = socketClient;
-        this.socketSingleServer = socketSingleServer;
     }
-
-    getSocketClient(){ return this.socketClient;}
-    getSocketSingleServer(){ return this.socketSingleServer;}
 };
 
 module.exports = Client;
