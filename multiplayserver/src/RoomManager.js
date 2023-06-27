@@ -54,7 +54,7 @@ class RoomManager{
 
         let gameEndRooms = [];
         this.playingRooms.forEach(( value, key )=>{
-            value.updateFrame();
+            // value.updateFrame();
             if( value.isGameEnd()){
                 gameEndRooms.push( key );
             }

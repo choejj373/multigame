@@ -56,51 +56,64 @@ class Room{
         this.timeStartReady = Date.now();
         console.log( `room:${this.roomId} - this.timeStartReady` );
 
-        // io.to( roomId ) 에 ready 알림
-        // messageQueue.pushBack( { type:1, roomId : this.roomId });
         const websocketServer = require('./WebsocketServer');
         websocketServer.ioForClient.to( this.roomId ).emit( 'gameready' );
-        // websocketServer.ioForClient.emit( 'gameready' );        
+
+        // 게임 시작
+        new Promise( resolve => setTimeout( resolve, 5000)).then(()=>{
+            this.startGame();
+        });
+
+
     }
 
     startGame(){
         this.state = 'playing';
         this.timeStart = Date.now();
-        // io.to( roomId ) 에 start 알림
-        // messageQueue.pushBack( { type:2, roomId : this.roomId });
+
         const websocketServer = require('./WebsocketServer');
         websocketServer.ioForClient.to( this.roomId ).emit( 'gamestart' )
+
+        this.tableBoss.forEach( (value, key)=>{
+            new Promise( resolve => setTimeout( resolve, key)).then(()=>{
+                websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
+            });
+        });
+
+        new Promise( resolve => setTimeout( resolve, 20000)).then(()=>{
+            this.endGame();
+        });
+
     }
     
     endGame(){
         this.state = 'end';
         this.timeEnd = Date.now();
-        // io.to( roomId ) 에 start 알림
-        // messageQueue.pushBack( { type:3, roomId : this.roomId });
+
         const websocketServer = require('./WebsocketServer');
         websocketServer.ioForClient.to( this.roomId ).emit( 'gameend' );
     }
 
-    updateGame( elapsedTime ){
-        if( this.tableBoss.size <=0 ){ return ;}
+    // updateGame( elapsedTime ){
+    //     if( this.tableBoss.size <=0 ){ return ;}
 
-        let keys = [];
+    //     let keys = [];
         
-        const websocketServer = require('./WebsocketServer');
+    //     const websocketServer = require('./WebsocketServer');
 
-        this.tableBoss.forEach( (value, key)=>{
-                if( key <= elapsedTime )
-                {
-                    keys.push( key );
-                    websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
-                }
-            }
-        )
+    //     this.tableBoss.forEach( (value, key)=>{
+    //             if( key <= elapsedTime )
+    //             {
+    //                 keys.push( key );
+    //                 websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
+    //             }
+    //         }
+    //     )
 
-        for( let key of keys ){
-            this.tableBoss.delete( key );
-        }
-    }
+    //     for( let key of keys ){
+    //         this.tableBoss.delete( key );
+    //     }
+    // }
 
     isGameEnd(){
         if( this.state == 'end'){ return true; }
@@ -113,30 +126,30 @@ class Room{
         return false;
     }
 
-    updateFrame(){
-        console.log( `roomId : ${this.roomId}, state:${this.state}` );
-        switch( this.state ){
-            case 'ready':
-                //ready 상태가 가 5초 지났다면 실제 게임 시작
-                if( Date.now() - this.timeStartReady >= 1000 * 5 ){
-                    this.startGame();
-                }
-                break;
-                //playing 상태가 10 초 지나면 게임 끝
-            case 'playing':
-                const elapsedTime = Date.now() - this.timeStart;
-                if(  elapsedTime >= 1000 * 20 ){
-                    this.endGame();
-                }else{
-                    this.updateGame( elapsedTime );
-                }
-                // 게임 플레이 진행
-                break;
-            default:
-                console.log( 'default');
-                break;
-        }
-    }
+    // updateFrame(){
+    //     console.log( `roomId : ${this.roomId}, state:${this.state}` );
+    //     switch( this.state ){
+    //         case 'ready':
+    //             //ready 상태가 가 5초 지났다면 실제 게임 시작
+    //             /*if( Date.now() - this.timeStartReady >= 1000 * 5 ){
+    //                 this.startGame();
+    //             }*/
+    //             break;
+    //             //playing 상태가 10 초 지나면 게임 끝
+    //         case 'playing':
+    //             /*const elapsedTime = Date.now() - this.timeStart;
+    //             if(  elapsedTime >= 1000 * 20 ){
+    //                 this.endGame();
+    //             }else{
+    //                 this.updateGame( elapsedTime );
+    //             }*/
+    //             // 게임 플레이 진행
+    //             break;
+    //         default:
+    //             console.log( 'default');
+    //             break;
+    //     }
+    // }
 
     
 }
