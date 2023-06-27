@@ -21,7 +21,7 @@ class RoomManager{
     }
 
     // 룸에 접속, 접속 성공시 io.socket.join 해주자
-    joinRoom( roomId, userId, socketId ){
+    joinRoom( roomId, userId, socket ){
 
         if( !this.waitClientJoinRooms.has( roomId ) ){
             console.warn( "not found waiting room : ", roomId );
@@ -30,7 +30,7 @@ class RoomManager{
         }
 
         const room = this.waitClientJoinRooms.get( roomId );
-        if( !room.join( userId, socketId ) ){
+        if( !room.join( userId, socket ) ){
             console.warn(" fail join room : ", roomId );
             return false;
         }
@@ -38,9 +38,9 @@ class RoomManager{
 
         // 모든 클라이언트가 접속 완료 되었다면
         if( room.isFull() ){
-            this.waitClientJoinRooms.delete( roomId );
-            room.startReady();
             this.playingRooms.set( roomId, room );
+            room.startReady();
+            this.waitClientJoinRooms.delete( roomId );
         }
 
         return true;

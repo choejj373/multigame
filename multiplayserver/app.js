@@ -42,6 +42,14 @@ socketConnector.on("createRoom",(data)=>{
         //방 생성 실패 알림
     }
 });
+// For Test
+const clients1 = [
+    {
+        userId : 'choejj1'
+    },
+ ]
+const roomId1 = 1;
+roomManager.createRoom( roomId1, clients1 );
 
 /////////////////////////////////////////////////////////////////////////////
 // 클라이언트 요청 처리 서버
@@ -49,20 +57,15 @@ const serverForClient = app.listen( 3002 ,()=>{
     console.log("multi play server listening : 3002");
 });
 
-const socketIO = require('socket.io');
-const ioForClient = socketIO( serverForClient, { path: "/socket.io"} );
+const websocketServer = require('./src/WebsocketServer');
+websocketServer.create( serverForClient );
 
-const onConnection = require('./src/onConnection');
-ioForClient.on('connection', onConnection );
+// const socketIO = require('socket.io');
+// const ioForClient = socketIO( serverForClient, { path: "/socket.io"} );
+
+// const onConnection = require('./src/onConnection');
+// ioForClient.on('connection', onConnection );
 /**--------------------------------------------------------------------*/
-// For Test
- const clients1 = [
-     {
-         userId : 'choejj1'
-     },
-  ]
-const roomId1 = 1;
-roomManager.createRoom( roomId1, clients1 );
 
 // const clients2 = [
 //     {
@@ -74,30 +77,30 @@ roomManager.createRoom( roomId1, clients1 );
 
 /**--------------------------------------------------------------------*/
 // 클래스간 의존성을 낮추기 위하여 별도의 메세지 큐를 두었다.(?)
-function processMessage(){
-    const msg = messageQueue.popFront();
-    if( msg ){
-        console.log( "Process Message : ", msg.type );
-        switch( msg.type )
-        {
-        case 1:
-            ioForClient.to( msg.roomId ).emit( 'ready' );
-            break;
-        case 2:
-            ioForClient.to( msg.roomId ).emit( 'gamestart' );
-            break;
-        case 3:
-            ioForClient.to( msg.roomId ).emit( 'gameend' );
-            break;
-        case 4:
-            ioForClient.to( msg.roomId ).emit( 'bossappear' , msg.bossType );
-            break;
-        }
-    }
-}
+// function processMessage(){
+//     const msg = messageQueue.popFront();
+//     if( msg ){
+//         console.log( "Process Message : ", msg.type );
+//         switch( msg.type )
+//         {
+//         case 1:
+//             ioForClient.to( msg.roomId ).emit( 'ready' );
+//             break;
+//         case 2:
+//             ioForClient.to( msg.roomId ).emit( 'gamestart' );
+//             break;
+//         case 3:
+//             ioForClient.to( msg.roomId ).emit( 'gameend' );
+//             break;
+//         case 4:
+//             ioForClient.to( msg.roomId ).emit( 'bossappear' , msg.bossType , 1);
+//             break;
+//         }
+//     }
+// }
 
 function updateFrame(){
-    processMessage();
+    // processMessage();
     roomManager.updateFrame();
 }
 

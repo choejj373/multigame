@@ -1,6 +1,8 @@
 const Client = require('./Client');
 const messageQueue = require('./MessageQueue');
 
+// const socketIO = require('socket.io');
+
 class Room{
     
     constructor( roomId, clients ){
@@ -9,6 +11,7 @@ class Room{
         this.joinedClients = new Map();
 
         this.roomId = roomId;
+        this.objId = 1;
 
         console.log( clients );
 
@@ -25,7 +28,7 @@ class Room{
         this.tableBoss.set( 1000 * 15, 2 );
     }
 
-    join( userId, socketId ){
+    join( userId, socket ){
 
         if( !this.waitJoinClients.has( userId )){
             console.log("not found waiting user : ", userId );
@@ -34,10 +37,15 @@ class Room{
 
         const client = this.waitJoinClients.get( userId );
 
-        client.setSocketId( socketId );
+        client.setSocketId( socket.id );
 
         this.joinedClients.set( client.userId, client );
         this.waitJoinClients.delete( client.userId );
+
+        socket.join( this.roomId );
+
+        // const websocketServer = require('./WebsocketServer');
+        // websocketServer.ioForClient.join( this.roomId );
 
         return true;
 
@@ -46,42 +54,45 @@ class Room{
     startReady(){
         this.state = 'ready';
         this.timeStartReady = Date.now();
-        console.log( this.timeStartReady );
+        console.log( `room:${this.roomId} - this.timeStartReady` );
 
         // io.to( roomId ) 에 ready 알림
-        messageQueue.pushBack( { type:1, roomId : this.roomId });
+        // messageQueue.pushBack( { type:1, roomId : this.roomId });
+        const websocketServer = require('./WebsocketServer');
+        websocketServer.ioForClient.to( this.roomId ).emit( 'gameready' );
+        // websocketServer.ioForClient.emit( 'gameready' );        
     }
 
     startGame(){
         this.state = 'playing';
         this.timeStart = Date.now();
         // io.to( roomId ) 에 start 알림
-        messageQueue.pushBack( { type:2, roomId : this.roomId });
+        // messageQueue.pushBack( { type:2, roomId : this.roomId });
+        const websocketServer = require('./WebsocketServer');
+        websocketServer.ioForClient.to( this.roomId ).emit( 'gamestart' )
     }
     
     endGame(){
         this.state = 'end';
         this.timeEnd = Date.now();
         // io.to( roomId ) 에 start 알림
-        messageQueue.pushBack( { type:3, roomId : this.roomId });
+        // messageQueue.pushBack( { type:3, roomId : this.roomId });
+        const websocketServer = require('./WebsocketServer');
+        websocketServer.ioForClient.to( this.roomId ).emit( 'gameend' );
     }
 
     updateGame( elapsedTime ){
         if( this.tableBoss.size <=0 ){ return ;}
 
         let keys = [];
+        
+        const websocketServer = require('./WebsocketServer');
 
         this.tableBoss.forEach( (value, key)=>{
                 if( key <= elapsedTime )
                 {
                     keys.push( key );
-                    messageQueue.pushBack( 
-                        { 
-                            type : 4, 
-                            roomId : this.roomId, 
-                            bossType : value,
-                        }
-                    );
+                    websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
                 }
             }
         )

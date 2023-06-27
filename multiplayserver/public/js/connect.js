@@ -15,7 +15,7 @@ socket.on('error', (err)=>{
     console.log("error : ", err);
 });
 
-socket.on('ready', (data)=>{
+socket.on('gameready', (data)=>{
     console.log("gameready")
 });
 
@@ -27,8 +27,8 @@ socket.on('gameend', (date)=>{
     console.log("gameend")
 });
 
-socket.on('bossappear', (data)=>{
-    console.log("boss appeared")
+socket.on('bossappear', (type, objId )=>{
+    console.log(`boss appeared - type:${type}, ObjId:${objId}`);
 });
 
 function joinRoom(){
