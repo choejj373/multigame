@@ -1,4 +1,4 @@
-class MessageQueue{
+/*class MessageQueue{
     #messageQueue = [];
     pushBack( any ){
         this.#messageQueue.push( any );
@@ -11,4 +11,4 @@ class MessageQueue{
     }
 }
 
-module.exports = new MessageQueue();
+module.exports = new MessageQueue();*/

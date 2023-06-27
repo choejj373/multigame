@@ -1,5 +1,5 @@
 const Client = require('./Client');
-const messageQueue = require('./MessageQueue');
+// const messageQueue = require('./MessageQueue');
 
 // const socketIO = require('socket.io');
 
@@ -44,9 +44,9 @@ class Room{
 
         socket.join( this.roomId );
 
-        // const websocketServer = require('./WebsocketServer');
-        // websocketServer.ioForClient.join( this.roomId );
-
+        
+        //const websocketServer = require('./WebsocketServer');
+        //console.log( websocketServer.ioForClient.sockets.clients( this.roomId ));
         return true;
 
     }

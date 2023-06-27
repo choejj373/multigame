@@ -20,7 +20,7 @@ app.use('/', homeR);
 
 
 const roomManager = require('./src/RoomManager');
-const messageQueue = require('./src/MessageQueue');
+// const messageQueue = require('./src/MessageQueue');
 
 /////////////////////////////////////////////////////////////////////////////
 // 매치 메이킹 서버 접속용
@@ -54,6 +54,7 @@ roomManager.createRoom( roomId1, clients1 );
 /////////////////////////////////////////////////////////////////////////////
 // 클라이언트 요청 처리 서버
 const serverForClient = app.listen( 3002 ,()=>{
+    console.log( process.argv[2]);
     console.log("multi play server listening : 3002");
 });
 

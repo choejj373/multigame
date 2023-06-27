@@ -27,14 +27,12 @@ class WebsocketServer{
 
                 console.log( data );
                 const msg = JSON.parse( data );
+                console.log( "before join - socket rooms size : ", socket.rooms.size );
                 if( roomManager.joinRoom( parseInt(msg.roomId), msg.userId, socket ) ){
-                    // socket room에 조인
-                    //socket.join( msg.roomId );
-        
                     //?? size가 좀 이상한데
-                    console.log( "socket rooms size : ", socket.rooms.size );
+                    console.log( "after join - socket rooms size : ", socket.rooms.size );
                 }else{
-                    console.log("not found room : ", msg.roomId );
+                    console.log( "not found room : ", msg.roomId );
                 }
         
                 
