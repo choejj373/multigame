@@ -44,27 +44,19 @@ class Room{
 
         socket.join( this.roomId );
 
-        
-        //const websocketServer = require('./WebsocketServer');
-        //console.log( websocketServer.ioForClient.sockets.clients( this.roomId ));
         return true;
-
     }
     
     startReady(){
         this.state = 'ready';
         this.timeStartReady = Date.now();
+
         console.log( `room:${this.roomId} - this.timeStartReady` );
 
         const websocketServer = require('./WebsocketServer');
         websocketServer.ioForClient.to( this.roomId ).emit( 'gameready' );
 
-        // 게임 시작
-        new Promise( resolve => setTimeout( resolve, 5000)).then(()=>{
-            this.startGame();
-        });
-
-
+        setTimeout( ()=>{this.startGame()}, 5000 );
     }
 
     startGame(){
@@ -75,15 +67,13 @@ class Room{
         websocketServer.ioForClient.to( this.roomId ).emit( 'gamestart' )
 
         this.tableBoss.forEach( (value, key)=>{
-            new Promise( resolve => setTimeout( resolve, key)).then(()=>{
+            setTimeout( ()=>{
                 websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
-            });
+            }, 
+            key);
         });
 
-        new Promise( resolve => setTimeout( resolve, 20000)).then(()=>{
-            this.endGame();
-        });
-
+        setTimeout( ()=>{this.endGame()}, 20000);
     }
     
     endGame(){
@@ -93,27 +83,6 @@ class Room{
         const websocketServer = require('./WebsocketServer');
         websocketServer.ioForClient.to( this.roomId ).emit( 'gameend' );
     }
-
-    // updateGame( elapsedTime ){
-    //     if( this.tableBoss.size <=0 ){ return ;}
-
-    //     let keys = [];
-        
-    //     const websocketServer = require('./WebsocketServer');
-
-    //     this.tableBoss.forEach( (value, key)=>{
-    //             if( key <= elapsedTime )
-    //             {
-    //                 keys.push( key );
-    //                 websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
-    //             }
-    //         }
-    //     )
-
-    //     for( let key of keys ){
-    //         this.tableBoss.delete( key );
-    //     }
-    // }
 
     isGameEnd(){
         if( this.state == 'end'){ return true; }
@@ -125,33 +94,7 @@ class Room{
         if( this.waitJoinClients.size <= 0 ){ return true; }
         return false;
     }
-
-    // updateFrame(){
-    //     console.log( `roomId : ${this.roomId}, state:${this.state}` );
-    //     switch( this.state ){
-    //         case 'ready':
-    //             //ready 상태가 가 5초 지났다면 실제 게임 시작
-    //             /*if( Date.now() - this.timeStartReady >= 1000 * 5 ){
-    //                 this.startGame();
-    //             }*/
-    //             break;
-    //             //playing 상태가 10 초 지나면 게임 끝
-    //         case 'playing':
-    //             /*const elapsedTime = Date.now() - this.timeStart;
-    //             if(  elapsedTime >= 1000 * 20 ){
-    //                 this.endGame();
-    //             }else{
-    //                 this.updateGame( elapsedTime );
-    //             }*/
-    //             // 게임 플레이 진행
-    //             break;
-    //         default:
-    //             console.log( 'default');
-    //             break;
-    //     }
-    // }
-
-    
+   
 }
 
 module.exports = Room;
