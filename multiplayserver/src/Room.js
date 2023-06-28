@@ -1,7 +1,4 @@
 const Client = require('./Client');
-// const messageQueue = require('./MessageQueue');
-
-// const socketIO = require('socket.io');
 
 class Room{
     
@@ -54,7 +51,7 @@ class Room{
         console.log( `room:${this.roomId} - this.timeStartReady` );
 
         const websocketServer = require('./WebsocketServer');
-        websocketServer.ioForClient.to( this.roomId ).emit( 'gameready' );
+        websocketServer.emitToRoom( this.roomId, 'gameready' );
 
         setTimeout( ()=>{this.startGame()}, 5000 );
     }
@@ -64,16 +61,16 @@ class Room{
         this.timeStart = Date.now();
 
         const websocketServer = require('./WebsocketServer');
-        websocketServer.ioForClient.to( this.roomId ).emit( 'gamestart' )
+        websocketServer.emitToRoom( this.roomId, 'gamestart' );
 
         this.tableBoss.forEach( (value, key)=>{
             setTimeout( ()=>{
-                websocketServer.ioForClient.to( this.roomId ).emit( 'bossappear' , value , this.objId++ );
+                websocketServer.emitToRoom( this.roomId, 'bossappear' , value , this.objId++ );
             }, 
             key);
         });
 
-        setTimeout( ()=>{this.endGame()}, 20000);
+        setTimeout( ()=>{this.endGame()}, 20000 );
     }
     
     endGame(){
@@ -81,7 +78,7 @@ class Room{
         this.timeEnd = Date.now();
 
         const websocketServer = require('./WebsocketServer');
-        websocketServer.ioForClient.to( this.roomId ).emit( 'gameend' );
+        websocketServer.emitToRoom( this.roomId, 'gameend' );
     }
 
     isGameEnd(){

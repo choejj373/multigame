@@ -61,11 +61,6 @@ const serverForClient = app.listen( 3002 ,()=>{
 const websocketServer = require('./src/WebsocketServer');
 websocketServer.create( serverForClient );
 
-// const socketIO = require('socket.io');
-// const ioForClient = socketIO( serverForClient, { path: "/socket.io"} );
-
-// const onConnection = require('./src/onConnection');
-// ioForClient.on('connection', onConnection );
 /**--------------------------------------------------------------------*/
 
 // const clients2 = [
@@ -75,30 +70,6 @@ websocketServer.create( serverForClient );
 //  ]
 // const roomId2 = 2;
 // roomManager.createRoom( roomId2, clients2 );
-
-/**--------------------------------------------------------------------*/
-// 클래스간 의존성을 낮추기 위하여 별도의 메세지 큐를 두었다.(?)
-// function processMessage(){
-//     const msg = messageQueue.popFront();
-//     if( msg ){
-//         console.log( "Process Message : ", msg.type );
-//         switch( msg.type )
-//         {
-//         case 1:
-//             ioForClient.to( msg.roomId ).emit( 'ready' );
-//             break;
-//         case 2:
-//             ioForClient.to( msg.roomId ).emit( 'gamestart' );
-//             break;
-//         case 3:
-//             ioForClient.to( msg.roomId ).emit( 'gameend' );
-//             break;
-//         case 4:
-//             ioForClient.to( msg.roomId ).emit( 'bossappear' , msg.bossType , 1);
-//             break;
-//         }
-//     }
-// }
 
 function updateFrame(){
      // processMessage();

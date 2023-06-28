@@ -40,6 +40,10 @@ class WebsocketServer{
             });
         } );
     }
+
+    emitToRoom( roomId, event, ...args){
+        this.ioForClient.to( roomId ).emit( event, ...args );
+    }
 };
 
 module.exports = new WebsocketServer();
